@@ -1,2 +1,3 @@
 # simple-native-bayes-classifier
-Hehe
+
+Simple implementation native bayes classifier
