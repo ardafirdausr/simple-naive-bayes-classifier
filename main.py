@@ -8,7 +8,8 @@ class NaiveBayesClassifier:
 
     Features = {}
     Records = {}
-    Probability = {}
+    DsicreteProbability = {}
+    ContinousData = {}
     Class = {}
 
     # constructor
@@ -17,9 +18,9 @@ class NaiveBayesClassifier:
         self.Features = data['features']
         self.Records = data['records']
         self.Class = self._getClass(self.Records)
-        self.Probability = {**self.Probability, 'prior': self.__getPrior(self.Records, self.Class)}
-        self.Probability = {**self.Probability, **self._generateDiscreteProbability(self.Records, self.Class)}
-        pp.pprint(self.Probability)
+        prior = self.__getPrior(self.Records, self.Class)
+        self.DiscreteProbability = self._generateDiscreteProbability(self.Records, self.Class)
+        pp.pprint(self.DiscreteProbability)
 
     # get dataset from csv file
     def __getDataFromFile(self, filename):
@@ -43,6 +44,7 @@ class NaiveBayesClassifier:
             'records': records,
         }
 
+    # get class type
     def _getClass(self, Records):
         categories = set([record[4] for record in Records])
         Class = {}
@@ -50,16 +52,16 @@ class NaiveBayesClassifier:
             Class[record[4]] = Class.get(record[4], 0) + 1
         return Class
 
+    # get priors probability
     def __getPrior(self, Records, Class):
         Class = {}
         for record in Records:
             Class[record[4]] = Class.get(record[4], 0) + 1 / len(Records)
         return Class
 
-    # generate likelihood,
+    # get likelihood and evidence from fixed data value
     def _generateDiscreteProbability(self, Records, Class):
         likelihood = {}
-        prior = {}
         evidence = {}
         for index, category in enumerate(Class):
             likelihood[category] = {}
@@ -68,17 +70,10 @@ class NaiveBayesClassifier:
                 if type(featureValue) == str:
                     likelihood[record[4]][featureValue] = likelihood[record[4]].get(featureValue, 0) + 1 / Class[record[4]]
                     evidence[featureValue] = evidence.get(featureValue, 0) + 1 / len(Records)
-            prior[record[4]] = prior.get(record[4], 0) + 1 / len(Records)
         return {
             'likelihood': likelihood,
-            'prior': prior,
             'evidence': evidence
         }
-
-    def _generateContinousProbability(self, Records, Class):
-        likelihood = {}
-        prior = {}
-        return
 
     # calculate mean
     def __mean(self, numbers):
@@ -94,6 +89,10 @@ class NaiveBayesClassifier:
         variance = sum([pow(x - avg, 2) for x in numbers]) / float(len(numbers) - 1)
         return variance
 
+    def __continousLikelihood(self, x, numbers):
+        variance = self.__variance(numbers)
+        avg = self.__mean(numbers)
+        return 1 / math.sqrt( 2 * math.pi * variance) * math.exp(-(pow(x - avg, 2)) / 2 * variance)
 
 Trainer = NaiveBayesClassifier()
 
