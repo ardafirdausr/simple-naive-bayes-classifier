@@ -113,4 +113,4 @@ class NaiveBayesClassifier:
             return "Tidak dapat diprediksi"
     
 Trainer = NaiveBayesClassifier()
-print(Trainer.hitung([15,'kayu bakar','ubin',6]))
+print(Trainer.hitung([12,'kayu bakar','plester',2]))
