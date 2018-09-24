@@ -1,16 +1,7 @@
-# open file with read operation
-file = open('data.csv', 'r')
+import socket
 
-# get title from csv
-title = file.readline()
-# get data table from csv
-table = file.readlines()
-data = []
-for row in table:
-    row = [column.strip() for column in row.split(';')]
-    data.append(row)
-print(data)
-
-
-# close file
-file.close()
+website = input("masukan nama website : ")
+ip = socket.gethostbyname(website)
+print('***************************************************')
+print('alamat IP : ', ip)
+print ('**************************************************')
