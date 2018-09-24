@@ -7,7 +7,7 @@ pp = pprint.PrettyPrinter(indent=4)
 class NaiveBayesClassifier:
 
     Features = {}
-    Records = {}
+    Records = []
     DsicreteProbability = {}
     ContinousData = {}
     Class = {}
@@ -18,9 +18,6 @@ class NaiveBayesClassifier:
         self.Features = data['features']
         self.Records = data['records']
         self.Class = self._getClass(self.Records)
-        prior = self.__getPrior(self.Records, self.Class)
-        self.DiscreteProbability = self._generateDiscreteProbability(self.Records, self.Class)
-        pp.pprint(self.DiscreteProbability)
 
     # get dataset from csv file
     def __getDataFromFile(self, filename):
@@ -46,58 +43,74 @@ class NaiveBayesClassifier:
 
     # get class type
     def _getClass(self, Records):
-        categories = set([record[4] for record in Records])
         Class = {}
         for record in Records:
             Class[record[4]] = Class.get(record[4], 0) + 1
         return Class
 
     # get priors probability
-    def __getPrior(self, Records, Class):
-        Class = {}
-        for record in Records:
-            Class[record[4]] = Class.get(record[4], 0) + 1 / len(Records)
-        return Class
-
-    # get likelihood and evidence from fixed data value
-    def _generateDiscreteProbability(self, Records, Class):
-        likelihood = {}
-        evidence = {}
-        for index, category in enumerate(Class):
-            likelihood[category] = {}
-        for record in Records:
-            for index, featureValue in enumerate(record[:-1]):
-                if type(featureValue) == str:
-                    likelihood[record[4]][featureValue] = likelihood[record[4]].get(featureValue, 0) + 1 / Class[record[4]]
-                    evidence[featureValue] = evidence.get(featureValue, 0) + 1 / len(Records)
-        return {
-            'likelihood': likelihood,
-            'evidence': evidence
-        }
+    def __getPrior(self,Class):
+        return self.Class[Class] / len(self.Records)
 
     # calculate mean
     def __mean(self, numbers):
         return sum(numbers) / float(len(numbers))
 
-    # calculate deviation standard
-    def __stdev(self, numbers):
-        return math.sqrt(self.__variance(numbers))
-
     # calculate variance
     def __variance(self, numbers):
         avg = self.__mean(numbers)
-        variance = sum([pow(x - avg, 2) for x in numbers]) / float(len(numbers) - 1)
+        variance = sum([pow(x - avg, 2) for x in numbers]) / float(len(numbers))
         return variance
+        
+    # calculate likelihoodDiscreate
+    def getLikelihoodDis(self, indexFitur, valueFitur, kelas) :
+        if indexFitur != 1 and indexFitur != 2 :
+            raise Exception('parameter fitur harus index 1 atau 2')
+        banyakFitur = 0
+        banyakKelas = self.Class[kelas]
+        for baris in self.Records :
+            if baris[indexFitur] == valueFitur and baris[4] == kelas:
+                banyakFitur += 1
+        return banyakFitur / banyakKelas
 
-    def __continousLikelihood(self, x, numbers):
-        variance = self.__variance(numbers)
-        avg = self.__mean(numbers)
-        return 1 / math.sqrt( 2 * math.pi * variance) * math.exp(-(pow(x - avg, 2)) / 2 * variance)
+    def getFitursValuesByClass(self,indexFitur,kelas):
+        numbers = []
+        for baris in self.Records :
+            if baris[4] == kelas :
+                numbers.append(float(baris[indexFitur]))
+        return numbers
 
+ # calculate likelihoodContinues
+    def getLikelihoodCon(self,indexFitur,fiturValue,kelas):
+        if indexFitur != 0 and indexFitur != 3:
+            raise Exception('index fitur harus index 0 atau 3')
+        numbers = self.getFitursValuesByClass( indexFitur, kelas )
+        vars = self.__variance(numbers)
+        mean = self.__mean(numbers)
+        return 1 / math.sqrt( 2 * math.pi * vars ) * math.exp( - math.pow( fiturValue - mean ,2) / 2 * vars )
+    
+    # fiturValues adalah nilai dari yang diuji dalam bentuk array 1 dimensi
+    def getPosterior(self,fiturValues, kelas):
+        likelihood = self.getLikelihoodCon(0,fiturValues[0],kelas)
+        likelihood = likelihood *self.getLikelihoodDis(1,fiturValues[1],kelas)
+        likelihood = likelihood * self.getLikelihoodDis(2,fiturValues[2],kelas)
+        likelihood = likelihood *self.getLikelihoodCon(3,fiturValues[3],kelas)
+        return likelihood * self.__getPrior(kelas)
+
+        #perhitungan kategori
+    def hitung(self, fiturValues):
+        posmiskin = self.getPosterior(fiturValues, 'miskin')
+        possedang = self.getPosterior(fiturValues, 'sedang')
+        poskaya = self.getPosterior(fiturValues, 'kaya')
+        
+        if posmiskin>possedang and posmiskin>poskaya:
+            return "Miskin"
+        elif possedang>posmiskin and possedang > poskaya:
+            return "Sedang"
+        elif poskaya>posmiskin and poskaya>possedang:
+            return "Kaya"
+        else:
+            return "Tidak dapat diprediksi"
+    
 Trainer = NaiveBayesClassifier()
-
-
-
-
-
-
+print(Trainer.hitung([15,'kayu bakar','ubin',6]))
