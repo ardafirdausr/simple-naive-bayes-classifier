@@ -97,13 +97,19 @@ class NaiveBayesClassifier:
         posmiskin = self.__getPosterior(fiturValues, 'miskin')
         possedang = self.__getPosterior(fiturValues, 'sedang')
         poskaya = self.__getPosterior(fiturValues, 'kaya')
-
+        Kelas = ""
         if posmiskin>possedang and posmiskin>poskaya:
-            return "Miskin"
+            Kelas =  "Miskin"
         elif possedang>posmiskin and possedang > poskaya:
-            return "Sedang"
+            Kelas = "Sedang"
         elif poskaya>posmiskin and poskaya>possedang:
-            return "Kaya"
+            Kelas = "Kaya"
         else:
-            return "Tidak dapat diprediksi"
+            Kelas = "Tidak dapat diprediksi"
+        return {
+            "Posterior Miskin": posmiskin,
+            "Posterior Sedang": possedang,
+            "Posterior Kaya": poskaya,
+            "Kelas": Kelas
+        }
 

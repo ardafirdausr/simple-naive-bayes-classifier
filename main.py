@@ -51,7 +51,10 @@ class Application(Frame):
         except:
             self.__alert("Input Error", "Luas Bangunan dan Frekuensi Makan Daging harus diisi beruapa angka")
         result = self.__trainer.getClassOf([LB, BBM, JL, FMD])
-        self.__alert(title="Class", content= "Data tersebut termasuk Class : "+ result)
+        content = ""
+        for index, key in enumerate(result):
+            content += str(key) + ": " + str(result[key]) + "\n"
+        self.__alert(title="Class", content= "Hasil klasifikasi\n"+ content)
 
     def __alert(self, title = "Warning", content = "Something went wrong"):
         messagebox.showinfo(title, content)
