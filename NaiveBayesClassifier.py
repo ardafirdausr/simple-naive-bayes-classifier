@@ -54,7 +54,7 @@ class NaiveBayesClassifier:
     # calculate variance
     def __variance(self, numbers):
         avg = self.__mean(numbers)
-        variance = sum([pow(x - avg, 2) for x in numbers]) / float(len(numbers))
+        variance = sum([pow(x - avg, 2) for x in numbers]) / float(len(numbers) )
         return variance
 
     # calculate likelihoodDiscreate
@@ -75,24 +75,24 @@ class NaiveBayesClassifier:
                 numbers.append(float(baris[indexFitur]))
         return numbers
 
- # calculate likelihoodContinues
+    # calculate likelihoodContinues
     def __getLikelihoodCon(self,indexFitur,fiturValue,kelas):
         if indexFitur != 0 and indexFitur != 3:
             raise Exception('index fitur harus index 0 atau 3')
         numbers = self.__getFitursValuesByClass( indexFitur, kelas )
         vars = self.__variance(numbers)
         mean = self.__mean(numbers)
-        return 1 / math.sqrt( 2 * math.pi * vars ) * math.exp( - math.pow( fiturValue - mean ,2) / 2 * vars )
+        return (1.0 / (math.sqrt(2 * math.pi * vars ))) * (math.exp( - (math.pow( fiturValue - mean ,2) / (2 * vars)) ))
 
     # fiturValues adalah nilai dari yang diuji dalam bentuk array 1 dimensi
     def __getPosterior(self,fiturValues, kelas):
         likelihood = self.__getLikelihoodCon(0,fiturValues[0],kelas)
-        likelihood = likelihood *self.getLikelihoodDis(1,fiturValues[1],kelas)
+        likelihood = likelihood * self.getLikelihoodDis(1,fiturValues[1],kelas)
         likelihood = likelihood * self.getLikelihoodDis(2,fiturValues[2],kelas)
-        likelihood = likelihood *self.__getLikelihoodCon(3,fiturValues[3],kelas)
+        likelihood = likelihood * self.__getLikelihoodCon(3,fiturValues[3],kelas)
         return likelihood * self.__getPrior(kelas)
 
-        #perhitungan kategori
+    #perhitungan kategori
     def getClassOf(self, fiturValues):
         posmiskin = self.__getPosterior(fiturValues, 'miskin')
         possedang = self.__getPosterior(fiturValues, 'sedang')
@@ -105,6 +105,5 @@ class NaiveBayesClassifier:
         elif poskaya>posmiskin and poskaya>possedang:
             return "Kaya"
         else:
-            # return "Tidak dapat diprediksi"
-            return "poskaya:"+str(poskaya)+",possedang:"+str(possedang)+",posmiskin:"+str(posmiskin)
+            return "Tidak dapat diprediksi"
 
